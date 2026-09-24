@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Дилемма кнопки</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 30%, #131a2b 0%, #070a11 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+      padding: 16px;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .game-container {
+      max-width: 760px;
+      width: 100%;
+      background: rgba(16, 20, 32, 0.8);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 56px;
+      padding: 46px 36px;
+      box-shadow: 0 40px 70px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+    }
+
+    /* ЭКРАН 1 — ДИЛЕММА */
+    .dilemma-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 46px;
+    }
+
+    .title {
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      text-align: center;
+      text-shadow: 0 4px 20px rgba(150, 180, 255, 0.3);
+    }
+
+    .description {
+      max-width: 580px;
+      text-align: center;
+      font-size: 1.18rem;
+      line-height: 1.7;
+      color: #c3cde4;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 22px 30px;
+      border-radius: 48px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    .description .blue-highlight {
+      color: #6d8cff;
+      font-weight: 600;
+    }
+
+    .description .red-highlight {
+      color: #ff5e5e;
+      font-weight: 600;
+    }
+
+    .buttons-row {
+      display: flex;
+      gap: 64px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 6px;
+    }
+
+    .btn-round {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.18s ease, filter 0.2s ease, box-shadow 0.25s ease;
+      box-shadow: 0 24px 34px -12px rgba(0, 0, 0, 0.85);
+      outline: 2px solid rgba(255, 255, 255, 0.18);
+      outline-offset: 5px;
+    }
+
+    .btn-round:hover {
+      transform: scale(1.04);
+      filter: brightness(1.15);
+    }
+
+    .btn-round:active {
+      transform: scale(0.96);
+      filter: brightness(0.85);
+      box-shadow: 0 8px 15px -5px rgba(0, 0, 0, 0.9);
+    }
+
+    .btn-blue {
+      background: radial-gradient(circle at 30% 25%, #5b7aff, #1a33a8);
+      box-shadow: 0 0 40px #2a4bff55, 0 24px 34px -12px black;
+    }
+
+    .btn-red {
+      background: radial-gradient(circle at 30% 25%, #ff6b6b, #a80e0e);
+      box-shadow: 0 0 40px #ff2a2a55, 0 24px 34px -12px black;
+    }
+
+    /* ЭКРАНЫ */
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* КАУНТДАУН */
+    .countdown-overlay {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      text-align: center;
+      padding: 30px 0;
+    }
+
+    .countdown-title {
+      font-size: 1.6rem;
+      color: #cbd5e8;
+      letter-spacing: 1px;
+      font-weight: 500;
+    }
+
+    .countdown-number {
+      font-size: 6rem;
+      font-weight: 800;
+      color: #ffffff;
+      text-shadow: 0 0 30px #4a6aff, 0 0 60px #1e3bb0;
+      animation: countPulse 0.6s infinite alternate;
+      line-height: 1;
+      transition: text-shadow 0.3s;
+    }
+
+    .countdown-number.red-glow {
+      text-shadow: 0 0 30px #ff4a4a, 0 0 60px #b01e1e;
+    }
+
+    @keyframes countPulse {
+      from { transform: scale(1); opacity: 0.85; }
+      to { transform: scale(1.08); opacity: 1; }
+    }
+
+    .countdown-bar {
+      width: 280px;
+      height: 10px;
+      background: #1e2538;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid #3a4560;
+    }
+
+    .countdown-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #4a6aff, #8aa6ff);
+      border-radius: 20px;
+      transition: width 0.1s linear;
+      box-shadow: 0 0 12px #4a6aff;
+    }
+
+    .countdown-bar-fill.red-fill {
+      background: linear-gradient(90deg, #ff4a4a, #ff8a8a);
+      box-shadow: 0 0 12px #ff4a4a;
+    }
+
+    .countdown-sub {
+      color: #8b96b5;
+      font-size: 1rem;
+      letter-spacing: 0.5px;
+    }
+
+    /* ЭКРАН СМЕРТИ — ДРАМАТИЧНЫЙ */
+    .death-screen {
+      gap: 26px;
+      position: relative;
+      padding: 20px 0;
+    }
+
+    .death-screen::before {
+      content: '';
+      position: absolute;
+      inset: -40px;
+      background: radial-gradient(circle at 50% 40%, rgba(255, 0, 0, 0.22), transparent 70%);
+      filter: blur(30px);
+      z-index: -1;
+      animation: deathGlow 3s infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes deathGlow {
+      0% { opacity: 0.4; transform: scale(0.95); }
+      100% { opacity: 0.9; transform: scale(1.1); }
+    }
+
+    .skull-emoji {
+      font-size: 8rem;
+      line-height: 1;
+      filter: drop-shadow(0 0 30px rgba(255, 30, 30, 0.85));
+      animation: skullPulse 2s infinite alternate;
+      text-shadow: 0 0 30px #ff1a1a, 0 0 70px #ff0000;
+    }
+
+    @keyframes skullPulse {
+      0% { transform: scale(1) rotate(-2deg); filter: drop-shadow(0 0 20px #ff2a2a); }
+      100% { transform: scale(1.1) rotate(2deg); filter: drop-shadow(0 0 55px #ff0000); }
+    }
+
+    .death-title {
+      font-size: 4rem;
+      font-weight: 900;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      margin-top: 6px;
+      background: linear-gradient(180deg, #ffffff, #ffb3b3, #ff3a3a);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 40px rgba(255, 40, 40, 0.7);
+      animation: titleShake 0.5s infinite alternate;
+    }
+
+    @keyframes titleShake {
+      0% { transform: translateX(-2px); }
+      100% { transform: translateX(2px); }
+    }
+
+    .death-sub {
+      color: #b0b8d0;
+      font-size: 1.25rem;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 14px 34px;
+      border-radius: 60px;
+      border: 1px solid #ff4d4d33;
+      letter-spacing: 0.4px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ЭКРАН ТЕЛЕФОНА */
+    .phone-screen {
+      align-items: center;
+      gap: 18px;
+      width: 100%;
+    }
+
+    .phone-frame {
+      background: #0d101a;
+      border-radius: 48px;
+      padding: 18px 12px 24px 12px;
+      box-shadow: 0 0 0 4px #262d3d, 0 40px 60px -15px black, inset 0 0 0 1px #5f6b8a;
+      max-width: 420px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .phone-screen-content {
+      background: #070a12;
+      border-radius: 32px;
+      padding: 20px 16px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      border: 1px solid #333c52;
+      box-shadow: inset 0 0 25px #00000090;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      color: #9aa5c0;
+      padding: 0 6px;
+      font-weight: 500;
+    }
+
+    .status-icons {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .status-icons svg {
+      width: 18px;
+      height: 18px;
+      fill: #9aa5c0;
+      stroke: #9aa5c0;
+      stroke-width: 0.5;
+    }
+
+    .time {
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: #cdd7f0;
+    }
+
+    .notifications {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 160px;
+    }
+
+    .notif {
+      background: #171d2b;
+      border-radius: 22px;
+      padding: 16px 18px;
+      text-align: left;
+      border: 1px solid #39435c;
+      box-shadow: 0 12px 22px -10px #00000090;
+      animation: slideIn 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .notif-icon {
+      font-size: 1.8rem;
+      line-height: 1;
+      filter: drop-shadow(0 0 6px #ff9900);
+    }
+
+    .notif-content {
+      flex: 1;
+    }
+
+    .notif-title {
+      font-weight: 600;
+      color: #f0f4ff;
+      margin-bottom: 4px;
+      font-size: 1rem;
+    }
+
+    .notif-text {
+      color: #a7b1cc;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
+    .notif:nth-child(2) {
+      border-left: 4px solid #ffaa33;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(24px) scale(0.94);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .dock {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: #141926;
+      border-radius: 34px;
+      padding: 12px 10px;
+      margin-top: 6px;
+      border: 1px solid #2c3448;
+    }
+
+    .dock-icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: #6f7a9c;
+      font-size: 0.7rem;
+      transition: color 0.2s;
+      cursor: default;
+    }
+
+    .dock-icon svg {
+      width: 28px;
+      height: 28px;
+      fill: none;
+      stroke: #6f7a9c;
+      stroke-width: 1.8;
+      transition: stroke 0.2s;
+    }
+
+    .dock-icon.active svg {
+      stroke: #5f8aff;
+      filter: drop-shadow(0 0 6px #3f6eff);
+    }
+
+    .dock-icon.active {
+      color: #9bb2ff;
+    }
+
+    .reset-btn {
+      margin-top: 18px;
+      background: transparent;
+      border: 1px solid #3d4a68;
+      color: #b7c1db;
+      padding: 12px 30px;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s;
+      backdrop-filter: blur(4px);
+    }
+
+    .reset-btn:hover {
+      background: #232b40;
+      color: white;
+      border-color: #6a7aa8;
+      box-shadow: 0 0 20px rgba(100, 140, 255, 0.2);
+    }
+
+    @media (max-width: 550px) {
+      .game-container { padding: 32px 20px; border-radius: 40px; }
+      .btn-round { width: 140px; height: 140px; }
+      .buttons-row { gap: 32px; }
+      .death-title { font-size: 2.8rem; }
+      .skull-emoji { font-size: 5.5rem; }
+      .title { font-size: 2rem; }
+      .description { font-size: 1rem; padding: 16px 20px; }
+      .countdown-number { font-size: 4.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="game-container">
+  <!-- ЭКРАН 1: ДИЛЕММА -->
+  <div id="dilemmaScreen" class="dilemma-screen">
+    <div class="title">Выберите кнопку</div>
+    <div class="description">
+      <span class="red-highlight">🔴 Красная кнопка</span> — вы выживаете гарантированно.<br>
+      <span class="blue-highlight">🔵 Синяя кнопка</span> — если её нажмут <strong>больше 50% человечества</strong>, выживут все.
+    </div>
+    <div class="buttons-row">
+      <button class="btn-round btn-blue" id="blueBtn" aria-label="Синяя кнопка"></button>
+      <button class="btn-round btn-red" id="redBtn" aria-label="Красная кнопка"></button>
+    </div>
+  </div>
+
+  <!-- ЭКРАН 2: КАУНТДАУН (СИНЯЯ) -->
+  <div id="countdownScreenBlue" class="screen">
+    <div class="countdown-overlay">
+      <div class="countdown-title">Обработка голосов...</div>
+      <div class="countdown-number" id="countdownNumberBlue">5</div>
+      <div class="countdown-bar">
+        <div class="countdown-bar-fill" id="countdownBarFillBlue"></div>
+      </div>
+      <div class="countdown-sub" id="countdownSubBlue">сканирование человечества</div>
+    </div>
+  </div>
+
+  <!-- ЭКРАН 3: СМЕРТЬ -->
+  <div id="deathScreen" class="screen death-screen">
+    <div class="skull-emoji">💀</div>
+    <div class="death-title">Вы умерли</div>
+    <div class="death-sub" id="deathSubText">синяя кнопка не спасла вас</div>
+    <button class="reset-btn" id="resetFromDeath">↺ попробовать снова</button>
+  </div>
+
+  <!-- ЭКРАН 4: КАУНТДАУН (КРАСНАЯ) -->
+  <div id="countdownScreenRed" class="screen">
+    <div class="countdown-overlay">
+      <div class="countdown-title">Подтверждение решения...</div>
+      <div class="countdown-number red-glow" id="countdownNumberRed">5</div>
+      <div class="countdown-bar">
+        <div class="countdown-bar-fill red-fill" id="countdownBarFillRed"></div>
+      </div>
+      <div class="countdown-sub" id="countdownSubRed">обработка вашего выбора</div>
+    </div>
+  </div>
+
+  <!-- ЭКРАН 5: ТЕЛЕФОН -->
+  <div id="phoneScreen" class="screen phone-screen">
+    <div class="phone-frame">
+      <div class="phone-screen-content">
+        <div class="status-bar">
+          <span class="time">9:41</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24"><path d="M2 22h20V2L2 22z" fill="currentColor"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 18.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM7.5 14.5a6.5 6.5 0 019 0M4 11a10.5 10.5 0 0116 0" stroke="currentColor" fill="none" stroke-width="1.8"/></svg>
+            <svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="10" rx="2" stroke="currentColor" fill="none" stroke-width="1.5"/><rect x="6" y="10" width="10" height="6" rx="1" fill="#9aa5c0"/><path d="M20 11v2" stroke="currentColor" stroke-width="2"/></svg>
+          </div>
+        </div>
+        <div class="notifications" id="notificationsContainer"></div>
+        <div class="dock">
+          <div class="dock-icon active">
+            <svg viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v10a2 2 0 01-2 2H5a2 2 0 01-2-2V10z" stroke="currentColor" fill="none"/><path d="M9 22V12h6v10" stroke="currentColor" fill="none"/></svg>
+            <span>Дом</span>
+          </div>
+          <div class="dock-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" fill="none"/><path d="M12 7v5l3 3" stroke="currentColor" fill="none"/></svg>
+            <span>Время</span>
+          </div>
+          <div class="dock-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2" stroke="currentColor" fill="none"/><path d="M8 6V4h8v2" stroke="currentColor" fill="none"/></svg>
+            <span>Фото</span>
+          </div>
+          <div class="dock-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="currentColor" fill="none"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" fill="none"/></svg>
+            <span>Настр.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="reset-btn" id="resetFromPhone">↺ сыграть ещё раз</button>
+  </div>
+</div>
+
+<script>
+  (function(){
+    // ---------- ЗВУК ----------
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playClickSound(frequency = 620, type = 'sine', duration = 0.12) {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = frequency;
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function playDeathSound() {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 1.2);
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.3);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 1.3);
+      } catch (e) {}
+    }
+
+    function playNotificationSound() {
+      try {
+        initAudio();
+        [880, 1100].forEach((freq, i) => {
+          setTimeout(() => {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.22);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.22);
+          }, i * 140);
+        });
+      } catch (e) {}
+    }
+
+    function playCountdownBeep(isFinal = false, isRed = false) {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = isFinal ? 880 : (isRed ? 380 : 440);
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + (isFinal ? 0.35 : 0.15));
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + (isFinal ? 0.35 : 0.15));
+      } catch (e) {}
+    }
+
+    // ---------- DOM ----------
+    const dilemmaScreen = document.getElementById('dilemmaScreen');
+    const countdownScreenBlue = document.getElementById('countdownScreenBlue');
+    const countdownScreenRed = document.getElementById('countdownScreenRed');
+    const deathScreen = document.getElementById('deathScreen');
+    const phoneScreen = document.getElementById('phoneScreen');
+    const blueBtn = document.getElementById('blueBtn');
+    const redBtn = document.getElementById('redBtn');
+    const resetFromDeath = document.getElementById('resetFromDeath');
+    const resetFromPhone = document.getElementById('resetFromPhone');
+    const notificationsContainer = document.getElementById('notificationsContainer');
+
+    const countdownNumberBlue = document.getElementById('countdownNumberBlue');
+    const countdownBarFillBlue = document.getElementById('countdownBarFillBlue');
+    const countdownSubBlue = document.getElementById('countdownSubBlue');
+
+    const countdownNumberRed = document.getElementById('countdownNumberRed');
+    const countdownBarFillRed = document.getElementById('countdownBarFillRed');
+    const countdownSubRed = document.getElementById('countdownSubRed');
+
+    const deathSubText = document.getElementById('deathSubText');
+
+    // ---------- СОСТОЯНИЕ ----------
+    let countdownInterval = null;
+
+    function hideAllScreens() {
+      [countdownScreenBlue, countdownScreenRed, deathScreen, phoneScreen].forEach(s => {
+        s.classList.remove('active');
+      });
+      dilemmaScreen.style.display = 'none';
+      countdownScreenBlue.style.display = 'none';
+      countdownScreenRed.style.display = 'none';
+      deathScreen.style.display = 'none';
+      phoneScreen.style.display = 'none';
+    }
+
+    function showScreen(name) {
+      hideAllScreens();
+      if (name === 'dilemma') {
+        dilemmaScreen.style.display = 'flex';
+      } else if (name === 'countdownBlue') {
+        countdownScreenBlue.style.display = 'flex';
+        countdownScreenBlue.classList.add('active');
+      } else if (name === 'countdownRed') {
+        countdownScreenRed.style.display = 'flex';
+        countdownScreenRed.classList.add('active');
+      } else if (name === 'death') {
+        deathScreen.style.display = 'flex';
+        deathScreen.classList.add('active');
+      } else if (name === 'phone') {
+        phoneScreen.style.display = 'flex';
+        phoneScreen.classList.add('active');
+      }
+    }
+
+    function clearCountdown() {
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+    }
+
+    // Универсальный каунтдаун
+    function runCountdown(config) {
+      clearCountdown();
+
+      const { screenName, numberEl, barEl, subEl, isRed, onComplete } = config;
+
+      // сброс
+      numberEl.textContent = '5';
+      barEl.style.width = '0%';
+      subEl.textContent = isRed ? 'обработка вашего выбора' : 'сканирование человечества';
+
+      showScreen(screenName);
+      playCountdownBeep(false, isRed);
+
+      const totalDuration = 4000;
+      const steps = 20;
+      const stepTime = totalDuration / steps;
+      let currentStep = 0;
+
+      countdownInterval = setInterval(() => {
+        currentStep++;
+        const progress = currentStep / steps;
+
+        const displayNum = Math.max(0, Math.ceil(5 - progress * 5));
+        numberEl.textContent = displayNum;
+        barEl.style.width = (progress * 100) + '%';
+
+        // подписи
+        if (isRed) {
+          if (progress < 0.25) subEl.textContent = 'обработка вашего выбора...';
+          else if (progress < 0.5) subEl.textContent = 'подтверждение решения...';
+          else if (progress < 0.75) subEl.textContent = 'фиксация результата...';
+          else subEl.textContent = 'почти готово...';
+        } else {
+          if (progress < 0.25) subEl.textContent = 'сканирование человечества...';
+          else if (progress < 0.5) subEl.textContent = 'подсчёт голосов...';
+          else if (progress < 0.75) subEl.textContent = 'обработка 7.9 млрд решений...';
+          else subEl.textContent = 'финальный подсчёт...';
+        }
+
+        if (currentStep % 4 === 0 && currentStep < steps) {
+          playCountdownBeep(false, isRed);
+        }
+
+        if (currentStep >= steps) {
+          clearCountdown();
+          playCountdownBeep(true, isRed);
+          setTimeout(onComplete, 450);
+        }
+      }, stepTime);
+    }
+
+    // Показать телефон
+    function showPhone() {
+      showScreen('phone');
+      notificationsContainer.innerHTML = '';
+
+      setTimeout(() => {
+        const notif1 = document.createElement('div');
+        notif1.className = 'notif';
+        notif1.innerHTML = `
+          <div class="notif-icon">⚠️</div>
+          <div class="notif-content">
+            <div class="notif-title">Системное сообщение</div>
+            <div class="notif-text">Поздравляю, вы убили 49,999% человечества</div>
+          </div>
+        `;
+        notificationsContainer.appendChild(notif1);
+        playNotificationSound();
+      }, 900);
+
+      setTimeout(() => {
+        const notif2 = document.createElement('div');
+        notif2.className = 'notif';
+        notif2.innerHTML = `
+          <div class="notif-icon">🗳️</div>
+          <div class="notif-content">
+            <div class="notif-title">Напоминание</div>
+            <div class="notif-text">Ваш голос мог стать решающим</div>
+          </div>
+        `;
+        notificationsContainer.appendChild(notif2);
+        playNotificationSound();
+      }, 2800);
+    }
+
+    function resetGame() {
+      clearCountdown();
+      notificationsContainer.innerHTML = '';
+      showScreen('dilemma');
+      playClickSound(450, 'triangle', 0.1);
+    }
+
+    // ---------- ОБРАБОТЧИКИ ----------
+    blueBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      playClickSound(520, 'sine', 0.16);
+      setTimeout(() => {
+        runCountdown({
+          screenName: 'countdownBlue',
+          numberEl: countdownNumberBlue,
+          barEl: countdownBarFillBlue,
+          subEl: countdownSubBlue,
+          isRed: false,
+          onComplete: () => {
+            deathSubText.textContent = '51,3% проголосовали за красную кнопку';
+            playDeathSound();
+            showScreen('death');
+          }
+        });
+      }, 120);
+    });
+
+    redBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      playClickSound(340, 'square', 0.13);
+      setTimeout(() => {
+        runCountdown({
+          screenName: 'countdownRed',
+          numberEl: countdownNumberRed,
+          barEl: countdownBarFillRed,
+          subEl: countdownSubRed,
+          isRed: true,
+          onComplete: () => {
+            showPhone();
+          }
+        });
+      }, 100);
+    });
+
+    resetFromDeath.addEventListener('click', (e) => {
+      e.stopPropagation();
+      resetGame();
+    });
+
+    resetFromPhone.addEventListener('click', (e) => {
+      e.stopPropagation();
+      resetGame();
+    });
+
+    document.body.addEventListener('click', () => {
+      initAudio();
+    }, { once: true });
+  })();
+</script>
+
+</body>
+</html>
