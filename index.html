@@ -187,16 +187,19 @@
   /* ===== ЭКРАН СМЕРТИ ===== */
   .death-screen {
     position: relative;
-    gap: 22px;
-    overflow: visible;
     justify-content: center;
     align-items: center;
+    padding: 24px 16px;
+    overflow: visible;
+    gap: 0;
+    height: 100%;
+    min-height: 100%;
   }
   .death-screen::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 50% 40%, rgba(255, 0, 0, 0.25), transparent 70%);
+    background: radial-gradient(circle at 50% 50%, rgba(255, 0, 0, 0.25), transparent 70%);
     filter: blur(30px);
     z-index: 0;
     animation: deathGlow 3s infinite alternate;
@@ -208,13 +211,14 @@
   }
   @keyframes deathGlow {
     0%   { opacity: 0.4; transform: scale(0.95); }
-    100% { opacity: 0.9; transform: scale(1.1); }
+    100% { opacity: 0.9; transform: scale(1.05); }
   }
   .skull-emoji {
     font-size: clamp(4.5rem, 14vw, 8rem);
     line-height: 1;
     filter: drop-shadow(0 0 30px rgba(255, 30, 30, 0.85));
     animation: skullPulse 2s infinite alternate;
+    margin-bottom: 16px;
   }
   @keyframes skullPulse {
     0%   { transform: scale(1) rotate(-2deg); }
@@ -233,6 +237,7 @@
     animation: titleShake 0.5s infinite alternate;
     max-width: 100%;
     word-break: break-word;
+    margin-bottom: 20px;
   }
   @keyframes titleShake {
     0%   { transform: translateX(-2px); }
@@ -248,6 +253,7 @@
     letter-spacing: 0.4px;
     backdrop-filter: blur(4px);
     max-width: 90vw;
+    margin-bottom: 8px;
   }
 
   /* ===== КНОПКИ ДЕЙСТВИЙ ===== */
@@ -265,7 +271,7 @@
     box-shadow: 0 10px 30px -8px rgba(80, 120, 255, 0.5);
     min-height: 48px;
     touch-action: manipulation;
-    margin-top: 8px;
+    margin-top: 12px;
   }
   .btn-main:hover  { transform: translateY(-2px); box-shadow: 0 16px 40px -8px rgba(80, 120, 255, 0.7); }
   .btn-main:active { transform: scale(0.97); }
@@ -503,7 +509,19 @@
     </div>
   </div>
 
-  <!-- ЭКРАН 5: ТЕЛЕФОН -->
+  <!-- ЭКРАН 5: КАУНТДАУН (ОТКАЗ) -->
+  <div id="countdownScreenRefuse" class="screen">
+    <div class="countdown-overlay">
+      <div class="countdown-title">Вы не сделали выбор...</div>
+      <div class="countdown-number" id="countdownNumberRefuse" style="text-shadow: 0 0 30px #888, 0 0 60px #444;">5</div>
+      <div class="countdown-bar">
+        <div class="countdown-bar-fill" id="countdownBarFillRefuse" style="background: linear-gradient(90deg, #666, #aaa); box-shadow: 0 0 12px #666;"></div>
+      </div>
+      <div class="countdown-sub" id="countdownSubRefuse">время уходит...</div>
+    </div>
+  </div>
+
+  <!-- ЭКРАН 6: ТЕЛЕФОН -->
   <div id="phoneStage" class="phone-stage">
     <div class="phone-frame">
       <div class="phone-content">
@@ -637,24 +655,29 @@
   }
 
   // ---------- DOM ----------
-  const dilemmaScreen       = document.getElementById('dilemmaScreen');
-  const countdownScreenBlue = document.getElementById('countdownScreenBlue');
-  const countdownScreenRed  = document.getElementById('countdownScreenRed');
-  const deathScreen         = document.getElementById('deathScreen');
-  const phoneStage          = document.getElementById('phoneStage');
-  const blueBtn             = document.getElementById('blueBtn');
-  const redBtn              = document.getElementById('redBtn');
-  const resetFromDeath      = document.getElementById('resetFromDeath');
-  const notifsContainer     = document.getElementById('notifsContainer');
-  const idleHint            = document.getElementById('idleHint');
+  const dilemmaScreen        = document.getElementById('dilemmaScreen');
+  const countdownScreenBlue  = document.getElementById('countdownScreenBlue');
+  const countdownScreenRed   = document.getElementById('countdownScreenRed');
+  const countdownScreenRefuse= document.getElementById('countdownScreenRefuse');
+  const deathScreen          = document.getElementById('deathScreen');
+  const phoneStage           = document.getElementById('phoneStage');
+  const blueBtn              = document.getElementById('blueBtn');
+  const redBtn               = document.getElementById('redBtn');
+  const resetFromDeath       = document.getElementById('resetFromDeath');
+  const notifsContainer      = document.getElementById('notifsContainer');
+  const idleHint             = document.getElementById('idleHint');
 
-  const countdownNumberBlue  = document.getElementById('countdownNumberBlue');
-  const countdownBarFillBlue = document.getElementById('countdownBarFillBlue');
-  const countdownSubBlue     = document.getElementById('countdownSubBlue');
+  const countdownNumberBlue   = document.getElementById('countdownNumberBlue');
+  const countdownBarFillBlue  = document.getElementById('countdownBarFillBlue');
+  const countdownSubBlue      = document.getElementById('countdownSubBlue');
 
-  const countdownNumberRed  = document.getElementById('countdownNumberRed');
-  const countdownBarFillRed = document.getElementById('countdownBarFillRed');
-  const countdownSubRed     = document.getElementById('countdownSubRed');
+  const countdownNumberRed    = document.getElementById('countdownNumberRed');
+  const countdownBarFillRed   = document.getElementById('countdownBarFillRed');
+  const countdownSubRed       = document.getElementById('countdownSubRed');
+
+  const countdownNumberRefuse = document.getElementById('countdownNumberRefuse');
+  const countdownBarFillRefuse= document.getElementById('countdownBarFillRefuse');
+  const countdownSubRefuse    = document.getElementById('countdownSubRefuse');
 
   const deathSubText = document.getElementById('deathSubText');
 
@@ -662,7 +685,9 @@
   let countdownInterval = null;
   let isTransitioning = false;
   let idleTimer = null;
-  const IDLE_DELAY = 15000;
+  let idleTriggered = false;
+  const IDLE_DELAY = 15000;      // 15 секунд до подсказки
+  const REFUSE_DELAY = 22000;    // 22 секунды до принудительного выбора
   const TOTAL_POPULATION = 7.9;
 
   // ---------- СМЕНА ЭКРАНОВ ----------
@@ -670,6 +695,7 @@
     dilemmaScreen,
     countdownScreenBlue,
     countdownScreenRed,
+    countdownScreenRefuse,
     deathScreen,
     phoneStage
   ];
@@ -684,6 +710,7 @@
     if (name === 'dilemma')            target = dilemmaScreen;
     else if (name === 'countdownBlue') target = countdownScreenBlue;
     else if (name === 'countdownRed')  target = countdownScreenRed;
+    else if (name === 'countdownRefuse') target = countdownScreenRefuse;
     else if (name === 'death')         target = deathScreen;
     else if (name === 'phone')         target = phoneStage;
     if (!target) return;
@@ -695,11 +722,34 @@
     else stopIdleTimer();
   }
 
-  // ---------- ПАСХАЛКА ----------
+  // ---------- ПАСХАЛКА / ОТКАЗ ----------
   function startIdleTimer() {
     stopIdleTimer();
+    idleTriggered = false;
     idleHint.classList.remove('visible');
-    idleTimer = setTimeout(() => idleHint.classList.add('visible'), IDLE_DELAY);
+    idleTimer = setTimeout(() => {
+      idleHint.classList.add('visible');
+      idleTriggered = true;
+      // После появления подсказки даём ещё немного времени, затем запускаем отсчёт отказа
+      idleTimer = setTimeout(() => {
+        if (!isTransitioning) {
+          isTransitioning = true;
+          stopIdleTimer();
+          runCountdown({
+            screenName: 'countdownRefuse',
+            numberEl: countdownNumberRefuse,
+            barEl: countdownBarFillRefuse,
+            subEl: countdownSubRefuse,
+            isRefuse: true,
+            onComplete: () => {
+              deathSubText.textContent = 'вы отказались выбирать кнопку — это вас не спасло';
+              playDeathSound();
+              showScreen('death');
+            }
+          });
+        }
+      }, REFUSE_DELAY - IDLE_DELAY);
+    }, IDLE_DELAY);
   }
   function stopIdleTimer() {
     if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
@@ -713,11 +763,11 @@
 
   function runCountdown(config) {
     clearCountdown();
-    const { screenName, numberEl, barEl, subEl, isRed, onComplete } = config;
+    const { screenName, numberEl, barEl, subEl, isRed, isRefuse, onComplete } = config;
 
     numberEl.textContent = '5';
     barEl.style.width = '0%';
-    subEl.textContent = isRed ? 'обработка вашего выбора' : 'сканирование человечества';
+    subEl.textContent = isRefuse ? 'время уходит...' : (isRed ? 'обработка вашего выбора' : 'сканирование человечества');
 
     showScreen(screenName);
     playCountdownBeep(false, isRed);
@@ -733,9 +783,14 @@
       numberEl.textContent = Math.max(0, Math.ceil(5 - progress * 5));
       barEl.style.width = (progress * 100) + '%';
 
-      // --- Подсчёт голосов для обоих сценариев ---
       const processed = (TOTAL_POPULATION * progress).toFixed(1);
-      if (isRed) {
+
+      if (isRefuse) {
+        if (progress < 0.25)      subEl.textContent = 'время уходит...';
+        else if (progress < 0.5)  subEl.textContent = 'вы всё ещё не сделали выбор...';
+        else if (progress < 0.75) subEl.textContent = 'молчание — тоже выбор...';
+        else                      subEl.textContent = 'слишком поздно...';
+      } else if (isRed) {
         if (progress < 0.25)      subEl.textContent = `обработка голосов... ${processed} млрд`;
         else if (progress < 0.5)  subEl.textContent = `подсчёт решений... ${processed} млрд`;
         else if (progress < 0.75) subEl.textContent = `обработка ${processed} млрд голосов...`;
@@ -808,6 +863,7 @@
     notifsContainer.innerHTML = '';
     notifsContainer.classList.remove('visible');
     isTransitioning = false;
+    idleTriggered = false;
     showScreen('dilemma');
     playClickSound(450, 'triangle', 0.1);
   }
@@ -864,7 +920,7 @@
   });
 
   dilemmaScreen.addEventListener('click', () => {
-    if (dilemmaScreen.classList.contains('active')) startIdleTimer();
+    if (dilemmaScreen.classList.contains('active') && !isTransitioning) startIdleTimer();
   });
 
   document.body.addEventListener('click', initAudio, { once: true });
