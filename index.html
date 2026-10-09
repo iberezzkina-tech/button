@@ -1,471 +1,464 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Дилемма кнопки</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Дилемма кнопки</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
 
-    body {
-      background: radial-gradient(circle at 50% 30%, #131a2b 0%, #070a11 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
-      padding: 16px;
-      margin: 0;
-      overflow: hidden;
-    }
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: radial-gradient(circle at 50% 30%, #131a2b 0%, #070a11 100%);
+    font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+    color: #e8ecf5;
+    position: fixed;
+    inset: 0;
+  }
 
-    .game-container {
-      max-width: 760px;
-      width: 100%;
-      background: rgba(16, 20, 32, 0.8);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-radius: 56px;
-      padding: 46px 36px;
-      box-shadow: 0 40px 70px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.05);
-      transition: all 0.3s ease;
-    }
+  #app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
 
-    /* ЭКРАН 1 — ДИЛЕММА */
-    .dilemma-screen {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 46px;
-    }
+  /* ===== ЭКРАНЫ ===== */
+  .screen {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+  }
+  .screen.active {
+    display: flex;
+    z-index: 11;
+    animation: fadeIn 0.5s ease;
+  }
 
-    .title {
-      font-size: 2.6rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: #ffffff;
-      text-align: center;
-      text-shadow: 0 4px 20px rgba(150, 180, 255, 0.3);
-    }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    .description {
-      max-width: 580px;
-      text-align: center;
-      font-size: 1.18rem;
-      line-height: 1.7;
-      color: #c3cde4;
-      background: rgba(0, 0, 0, 0.3);
-      padding: 22px 30px;
-      border-radius: 48px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.5);
-    }
+  /* ===== ЭКРАН 1 — ДИЛЕММА ===== */
+  .dilemma-screen {
+    gap: 36px;
+  }
 
-    .description .blue-highlight {
-      color: #6d8cff;
-      font-weight: 600;
-    }
+  .title {
+    font-size: clamp(1.8rem, 6vw, 2.6rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+    text-shadow: 0 4px 20px rgba(150, 180, 255, 0.3);
+  }
 
-    .description .red-highlight {
-      color: #ff5e5e;
-      font-weight: 600;
-    }
+  .description {
+    max-width: 580px;
+    text-align: center;
+    font-size: clamp(0.95rem, 2.6vw, 1.15rem);
+    line-height: 1.7;
+    color: #c3cde4;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 20px 28px;
+    border-radius: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.5);
+  }
 
-    .buttons-row {
-      display: flex;
-      gap: 64px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 6px;
-    }
+  .description .blue-highlight { color: #6d8cff; font-weight: 600; }
+  .description .red-highlight  { color: #ff5e5e; font-weight: 600; }
 
-    .btn-round {
-      width: 180px;
-      height: 180px;
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.18s ease, filter 0.2s ease, box-shadow 0.25s ease;
-      box-shadow: 0 24px 34px -12px rgba(0, 0, 0, 0.85);
-      outline: 2px solid rgba(255, 255, 255, 0.18);
-      outline-offset: 5px;
-    }
+  .buttons-row {
+    display: flex;
+    gap: 64px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+  }
 
-    .btn-round:hover {
-      transform: scale(1.04);
-      filter: brightness(1.15);
-    }
+  .btn-round {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.18s ease, filter 0.2s ease, box-shadow 0.25s ease;
+    box-shadow: 0 24px 34px -12px rgba(0, 0, 0, 0.85);
+    outline: 2px solid rgba(255, 255, 255, 0.18);
+    outline-offset: 5px;
+    touch-action: manipulation;
+  }
+  .btn-round:hover  { transform: scale(1.04); filter: brightness(1.15); }
+  .btn-round:active { transform: scale(0.96); filter: brightness(0.85); box-shadow: 0 8px 15px -5px rgba(0, 0, 0, 0.9); }
 
-    .btn-round:active {
-      transform: scale(0.96);
-      filter: brightness(0.85);
-      box-shadow: 0 8px 15px -5px rgba(0, 0, 0, 0.9);
-    }
+  .btn-blue {
+    background: radial-gradient(circle at 30% 25%, #5b7aff, #1a33a8);
+    box-shadow: 0 0 40px #2a4bff55, 0 24px 34px -12px black;
+  }
+  .btn-red {
+    background: radial-gradient(circle at 30% 25%, #ff6b6b, #a80e0e);
+    box-shadow: 0 0 40px #ff2a2a55, 0 24px 34px -12px black;
+  }
 
-    .btn-blue {
-      background: radial-gradient(circle at 30% 25%, #5b7aff, #1a33a8);
-      box-shadow: 0 0 40px #2a4bff55, 0 24px 34px -12px black;
-    }
+  /* ===== ПАСХАЛКА ===== */
+  .idle-hint {
+    font-size: 0.9rem;
+    color: #7c88a8;
+    letter-spacing: 1.5px;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    height: 20px;
+    text-shadow: 0 0 12px rgba(120, 150, 255, 0.4);
+  }
+  .idle-hint.visible { opacity: 1; animation: idleBlink 1.6s ease-in-out infinite; }
+  @keyframes idleBlink { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
 
-    .btn-red {
-      background: radial-gradient(circle at 30% 25%, #ff6b6b, #a80e0e);
-      box-shadow: 0 0 40px #ff2a2a55, 0 24px 34px -12px black;
-    }
+  /* ===== КАУНТДАУН ===== */
+  .countdown-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    text-align: center;
+  }
+  .countdown-title {
+    font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+    color: #cbd5e8;
+    letter-spacing: 1px;
+    font-weight: 500;
+  }
+  .countdown-number {
+    font-size: clamp(4rem, 16vw, 6rem);
+    font-weight: 800;
+    color: #ffffff;
+    text-shadow: 0 0 30px #4a6aff, 0 0 60px #1e3bb0;
+    animation: countPulse 0.6s infinite alternate;
+    line-height: 1;
+    transition: text-shadow 0.3s;
+  }
+  .countdown-number.red-glow {
+    text-shadow: 0 0 30px #ff4a4a, 0 0 60px #b01e1e;
+  }
+  @keyframes countPulse {
+    from { transform: scale(1);    opacity: 0.85; }
+    to   { transform: scale(1.08); opacity: 1; }
+  }
 
-    /* ЭКРАНЫ */
-    .screen {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      animation: fadeIn 0.5s ease;
-    }
+  .countdown-bar {
+    width: min(280px, 80vw);
+    height: 10px;
+    background: #1e2538;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid #3a4560;
+  }
+  .countdown-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #4a6aff, #8aa6ff);
+    border-radius: 20px;
+    transition: width 0.1s linear;
+    box-shadow: 0 0 12px #4a6aff;
+  }
+  .countdown-bar-fill.red-fill {
+    background: linear-gradient(90deg, #ff4a4a, #ff8a8a);
+    box-shadow: 0 0 12px #ff4a4a;
+  }
+  .countdown-sub {
+    color: #8b96b5;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+  }
 
-    .screen.active {
-      display: flex;
-    }
+  /* ===== ЭКРАН СМЕРТИ ===== */
+  .death-screen {
+    position: relative;
+    gap: 22px;
+    overflow: visible;
+    justify-content: center;
+    align-items: center;
+  }
+  .death-screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 40%, rgba(255, 0, 0, 0.25), transparent 70%);
+    filter: blur(30px);
+    z-index: 0;
+    animation: deathGlow 3s infinite alternate;
+    pointer-events: none;
+  }
+  .death-screen > * {
+    position: relative;
+    z-index: 1;
+  }
+  @keyframes deathGlow {
+    0%   { opacity: 0.4; transform: scale(0.95); }
+    100% { opacity: 0.9; transform: scale(1.1); }
+  }
+  .skull-emoji {
+    font-size: clamp(4.5rem, 14vw, 8rem);
+    line-height: 1;
+    filter: drop-shadow(0 0 30px rgba(255, 30, 30, 0.85));
+    animation: skullPulse 2s infinite alternate;
+  }
+  @keyframes skullPulse {
+    0%   { transform: scale(1) rotate(-2deg); }
+    100% { transform: scale(1.1) rotate(2deg); }
+  }
+  .death-title {
+    font-size: clamp(2rem, 9vw, 4rem);
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, #ffffff, #ffb3b3, #ff3a3a);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 40px rgba(255, 40, 40, 0.7);
+    animation: titleShake 0.5s infinite alternate;
+    max-width: 100%;
+    word-break: break-word;
+  }
+  @keyframes titleShake {
+    0%   { transform: translateX(-2px); }
+    100% { transform: translateX(2px); }
+  }
+  .death-sub {
+    color: #b0b8d0;
+    font-size: clamp(0.95rem, 2.6vw, 1.15rem);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 12px 28px;
+    border-radius: 60px;
+    border: 1px solid #ff4d4d33;
+    letter-spacing: 0.4px;
+    backdrop-filter: blur(4px);
+    max-width: 90vw;
+  }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
+  /* ===== КНОПКИ ДЕЙСТВИЙ ===== */
+  .btn-main {
+    background: linear-gradient(135deg, #2a3a6a, #1a2244);
+    border: 1px solid #4a5a8a;
+    color: #fff;
+    padding: 14px 36px;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.25s;
+    box-shadow: 0 10px 30px -8px rgba(80, 120, 255, 0.5);
+    min-height: 48px;
+    touch-action: manipulation;
+    margin-top: 8px;
+  }
+  .btn-main:hover  { transform: translateY(-2px); box-shadow: 0 16px 40px -8px rgba(80, 120, 255, 0.7); }
+  .btn-main:active { transform: scale(0.97); }
 
-    /* КАУНТДАУН */
-    .countdown-overlay {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 24px;
-      text-align: center;
-      padding: 30px 0;
-    }
+  /* ═══════════════════════════════════════════════════════════════
+     ФИНАЛ — ТЕЛЕФОН
+     ═══════════════════════════════════════════════════════════════ */
+  .phone-stage {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px 14px calc(20px + env(safe-area-inset-bottom));
+    background: radial-gradient(circle at 50% 20%, #131a2b, #05070d 80%);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .phone-stage.active {
+    display: flex;
+    z-index: 21;
+    animation: fadeIn 0.6s ease;
+  }
 
-    .countdown-title {
-      font-size: 1.6rem;
-      color: #cbd5e8;
-      letter-spacing: 1px;
-      font-weight: 500;
-    }
+  .phone-frame {
+    background: #0d101a;
+    border-radius: 44px;
+    padding: 16px 10px 22px;
+    box-shadow: 0 0 0 4px #262d3d, 0 40px 70px -15px black, inset 0 0 0 1px #5f6b8a;
+    max-width: 400px;
+    width: 100%;
+    margin: 0 auto;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    height: min(760px, calc(100dvh - 60px));
+    min-height: 500px;
+  }
 
-    .countdown-number {
-      font-size: 6rem;
-      font-weight: 800;
-      color: #ffffff;
-      text-shadow: 0 0 30px #4a6aff, 0 0 60px #1e3bb0;
-      animation: countPulse 0.6s infinite alternate;
-      line-height: 1;
-      transition: text-shadow 0.3s;
-    }
+  .phone-content {
+    background: #070a12;
+    border-radius: 32px;
+    padding: 20px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border: 1px solid #333c52;
+    box-shadow: inset 0 0 25px #00000090;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+  }
 
-    .countdown-number.red-glow {
-      text-shadow: 0 0 30px #ff4a4a, 0 0 60px #b01e1e;
-    }
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #9aa5c0;
+    padding: 0 6px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .status-icons { display: flex; gap: 7px; align-items: center; }
+  .status-icons svg { width: 16px; height: 16px; fill: #9aa5c0; stroke: #9aa5c0; stroke-width: 0.5; }
+  .status-time { font-weight: 600; letter-spacing: 0.5px; color: #cdd7f0; }
 
-    @keyframes countPulse {
-      from { transform: scale(1); opacity: 0.85; }
-      to { transform: scale(1.08); opacity: 1; }
-    }
+  .notifs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .notifs.visible { opacity: 1; }
+  .notifs::-webkit-scrollbar { width: 4px; }
+  .notifs::-webkit-scrollbar-track { background: transparent; }
+  .notifs::-webkit-scrollbar-thumb { background: #2c3a5c; border-radius: 2px; }
 
-    .countdown-bar {
-      width: 280px;
-      height: 10px;
-      background: #1e2538;
-      border-radius: 20px;
-      overflow: hidden;
-      border: 1px solid #3a4560;
-    }
+  .notif {
+    background: #171d2b;
+    border-radius: 20px;
+    padding: 14px 16px;
+    text-align: left;
+    border: 1px solid #39435c;
+    box-shadow: 0 12px 22px -10px #00000090;
+    animation: slideIn 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    flex-shrink: 0;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.92); }
+    to   { opacity: 1; transform: translateY(0)    scale(1); }
+  }
+  .notif-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+    filter: drop-shadow(0 0 6px #ff9900);
+    flex-shrink: 0;
+  }
+  .notif-body { flex: 1; min-width: 0; }
+  .notif-title {
+    font-weight: 700;
+    color: #f0f4ff;
+    margin-bottom: 4px;
+    font-size: 0.92rem;
+    letter-spacing: 0.3px;
+  }
+  .notif-text {
+    color: #b6c0d8;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    word-wrap: break-word;
+  }
+  .notif-time { color: #5f6a85; font-size: 0.72rem; margin-top: 4px; }
 
-    .countdown-bar-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #4a6aff, #8aa6ff);
-      border-radius: 20px;
-      transition: width 0.1s linear;
-      box-shadow: 0 0 12px #4a6aff;
-    }
+  .dock {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: #141926;
+    border-radius: 26px;
+    padding: 10px 8px;
+    border: 1px solid #2c3448;
+    flex-shrink: 0;
+  }
+  .dock-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    color: #6f7a9c;
+    font-size: 0.62rem;
+    opacity: 0.75;
+  }
+  .dock-icon svg { width: 22px; height: 22px; fill: none; stroke: #6f7a9c; stroke-width: 1.8; }
+  .dock-icon.active svg { stroke: #5f8aff; filter: drop-shadow(0 0 6px #3f6eff); }
+  .dock-icon.active { color: #9bb2ff; }
 
-    .countdown-bar-fill.red-fill {
-      background: linear-gradient(90deg, #ff4a4a, #ff8a8a);
-      box-shadow: 0 0 12px #ff4a4a;
-    }
-
-    .countdown-sub {
-      color: #8b96b5;
-      font-size: 1rem;
-      letter-spacing: 0.5px;
-    }
-
-    /* ЭКРАН СМЕРТИ — ДРАМАТИЧНЫЙ */
-    .death-screen {
-      gap: 26px;
-      position: relative;
-      padding: 20px 0;
-    }
-
-    .death-screen::before {
-      content: '';
-      position: absolute;
-      inset: -40px;
-      background: radial-gradient(circle at 50% 40%, rgba(255, 0, 0, 0.22), transparent 70%);
-      filter: blur(30px);
-      z-index: -1;
-      animation: deathGlow 3s infinite alternate;
-      pointer-events: none;
-    }
-
-    @keyframes deathGlow {
-      0% { opacity: 0.4; transform: scale(0.95); }
-      100% { opacity: 0.9; transform: scale(1.1); }
-    }
-
-    .skull-emoji {
-      font-size: 8rem;
-      line-height: 1;
-      filter: drop-shadow(0 0 30px rgba(255, 30, 30, 0.85));
-      animation: skullPulse 2s infinite alternate;
-      text-shadow: 0 0 30px #ff1a1a, 0 0 70px #ff0000;
-    }
-
-    @keyframes skullPulse {
-      0% { transform: scale(1) rotate(-2deg); filter: drop-shadow(0 0 20px #ff2a2a); }
-      100% { transform: scale(1.1) rotate(2deg); filter: drop-shadow(0 0 55px #ff0000); }
-    }
-
-    .death-title {
-      font-size: 4rem;
-      font-weight: 900;
-      letter-spacing: 6px;
-      text-transform: uppercase;
-      margin-top: 6px;
-      background: linear-gradient(180deg, #ffffff, #ffb3b3, #ff3a3a);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      text-shadow: 0 0 40px rgba(255, 40, 40, 0.7);
-      animation: titleShake 0.5s infinite alternate;
-    }
-
-    @keyframes titleShake {
-      0% { transform: translateX(-2px); }
-      100% { transform: translateX(2px); }
-    }
-
-    .death-sub {
-      color: #b0b8d0;
-      font-size: 1.25rem;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 14px 34px;
-      border-radius: 60px;
-      border: 1px solid #ff4d4d33;
-      letter-spacing: 0.4px;
-      backdrop-filter: blur(4px);
-    }
-
-    /* ЭКРАН ТЕЛЕФОНА */
-    .phone-screen {
-      align-items: center;
-      gap: 18px;
-      width: 100%;
-    }
+  /* ===== МОБИЛЬНАЯ АДАПТАЦИЯ ===== */
+  @media (max-width: 600px) {
+    .buttons-row { gap: 32px; }
+    .btn-round { width: 140px; height: 140px; }
+    .description { padding: 16px 20px; }
 
     .phone-frame {
-      background: #0d101a;
-      border-radius: 48px;
-      padding: 18px 12px 24px 12px;
-      box-shadow: 0 0 0 4px #262d3d, 0 40px 60px -15px black, inset 0 0 0 1px #5f6b8a;
-      max-width: 420px;
-      width: 100%;
-      margin: 0 auto;
-    }
-
-    .phone-screen-content {
-      background: #070a12;
-      border-radius: 32px;
-      padding: 20px 16px 16px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 22px;
-      border: 1px solid #333c52;
-      box-shadow: inset 0 0 25px #00000090;
-    }
-
-    .status-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.9rem;
-      color: #9aa5c0;
-      padding: 0 6px;
-      font-weight: 500;
-    }
-
-    .status-icons {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .status-icons svg {
-      width: 18px;
-      height: 18px;
-      fill: #9aa5c0;
-      stroke: #9aa5c0;
-      stroke-width: 0.5;
-    }
-
-    .time {
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      color: #cdd7f0;
-    }
-
-    .notifications {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      min-height: 160px;
-    }
-
-    .notif {
-      background: #171d2b;
-      border-radius: 22px;
-      padding: 16px 18px;
-      text-align: left;
-      border: 1px solid #39435c;
-      box-shadow: 0 12px 22px -10px #00000090;
-      animation: slideIn 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.15);
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-    }
-
-    .notif-icon {
-      font-size: 1.8rem;
-      line-height: 1;
-      filter: drop-shadow(0 0 6px #ff9900);
-    }
-
-    .notif-content {
-      flex: 1;
-    }
-
-    .notif-title {
-      font-weight: 600;
-      color: #f0f4ff;
-      margin-bottom: 4px;
-      font-size: 1rem;
-    }
-
-    .notif-text {
-      color: #a7b1cc;
-      font-size: 0.95rem;
-      line-height: 1.45;
-    }
-
-    .notif:nth-child(2) {
-      border-left: 4px solid #ffaa33;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(24px) scale(0.94);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    .dock {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      background: #141926;
+      max-width: 100%;
       border-radius: 34px;
-      padding: 12px 10px;
-      margin-top: 6px;
-      border: 1px solid #2c3448;
+      padding: 10px 7px 16px;
+      height: min(720px, calc(100dvh - 30px));
+      min-height: 460px;
     }
+    .phone-content { border-radius: 24px; padding: 14px 10px 10px; gap: 12px; }
+    .notif { padding: 11px 12px; border-radius: 16px; }
+    .notif-title { font-size: 0.84rem; }
+    .notif-text { font-size: 0.84rem; }
+    .notif-icon { font-size: 1.4rem; }
+    .dock-icon svg { width: 20px; height: 20px; }
+    .dock-icon { font-size: 0.58rem; }
+  }
 
-    .dock-icon {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      color: #6f7a9c;
-      font-size: 0.7rem;
-      transition: color 0.2s;
-      cursor: default;
-    }
+  @media (max-width: 400px) {
+    .buttons-row { gap: 22px; flex-direction: column; align-items: center; }
+    .btn-round { width: 110px; height: 110px; }
+  }
 
-    .dock-icon svg {
-      width: 28px;
-      height: 28px;
-      fill: none;
-      stroke: #6f7a9c;
-      stroke-width: 1.8;
-      transition: stroke 0.2s;
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
     }
-
-    .dock-icon.active svg {
-      stroke: #5f8aff;
-      filter: drop-shadow(0 0 6px #3f6eff);
-    }
-
-    .dock-icon.active {
-      color: #9bb2ff;
-    }
-
-    .reset-btn {
-      margin-top: 18px;
-      background: transparent;
-      border: 1px solid #3d4a68;
-      color: #b7c1db;
-      padding: 12px 30px;
-      border-radius: 50px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.25s;
-      backdrop-filter: blur(4px);
-    }
-
-    .reset-btn:hover {
-      background: #232b40;
-      color: white;
-      border-color: #6a7aa8;
-      box-shadow: 0 0 20px rgba(100, 140, 255, 0.2);
-    }
-
-    @media (max-width: 550px) {
-      .game-container { padding: 32px 20px; border-radius: 40px; }
-      .btn-round { width: 140px; height: 140px; }
-      .buttons-row { gap: 32px; }
-      .death-title { font-size: 2.8rem; }
-      .skull-emoji { font-size: 5.5rem; }
-      .title { font-size: 2rem; }
-      .description { font-size: 1rem; padding: 16px 20px; }
-      .countdown-number { font-size: 4.5rem; }
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
 
-<div class="game-container">
+<div id="app">
+
   <!-- ЭКРАН 1: ДИЛЕММА -->
-  <div id="dilemmaScreen" class="dilemma-screen">
+  <div id="dilemmaScreen" class="screen dilemma-screen active">
     <div class="title">Выберите кнопку</div>
     <div class="description">
       <span class="red-highlight">🔴 Красная кнопка</span> — вы выживаете гарантированно.<br>
@@ -473,8 +466,9 @@
     </div>
     <div class="buttons-row">
       <button class="btn-round btn-blue" id="blueBtn" aria-label="Синяя кнопка"></button>
-      <button class="btn-round btn-red" id="redBtn" aria-label="Красная кнопка"></button>
+      <button class="btn-round btn-red"  id="redBtn"  aria-label="Красная кнопка"></button>
     </div>
+    <div class="idle-hint" id="idleHint">время идёт...</div>
   </div>
 
   <!-- ЭКРАН 2: КАУНТДАУН (СИНЯЯ) -->
@@ -494,7 +488,7 @@
     <div class="skull-emoji">💀</div>
     <div class="death-title">Вы умерли</div>
     <div class="death-sub" id="deathSubText">синяя кнопка не спасла вас</div>
-    <button class="reset-btn" id="resetFromDeath">↺ попробовать снова</button>
+    <button class="btn-main" id="resetFromDeath">↺ попробовать снова</button>
   </div>
 
   <!-- ЭКРАН 4: КАУНТДАУН (КРАСНАЯ) -->
@@ -510,18 +504,20 @@
   </div>
 
   <!-- ЭКРАН 5: ТЕЛЕФОН -->
-  <div id="phoneScreen" class="screen phone-screen">
+  <div id="phoneStage" class="phone-stage">
     <div class="phone-frame">
-      <div class="phone-screen-content">
+      <div class="phone-content">
         <div class="status-bar">
-          <span class="time">9:41</span>
+          <span class="status-time">9:41</span>
           <div class="status-icons">
             <svg viewBox="0 0 24 24"><path d="M2 22h20V2L2 22z" fill="currentColor"/></svg>
             <svg viewBox="0 0 24 24"><path d="M12 18.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM7.5 14.5a6.5 6.5 0 019 0M4 11a10.5 10.5 0 0116 0" stroke="currentColor" fill="none" stroke-width="1.8"/></svg>
             <svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="10" rx="2" stroke="currentColor" fill="none" stroke-width="1.5"/><rect x="6" y="10" width="10" height="6" rx="1" fill="#9aa5c0"/><path d="M20 11v2" stroke="currentColor" stroke-width="2"/></svg>
           </div>
         </div>
-        <div class="notifications" id="notificationsContainer"></div>
+
+        <div class="notifs" id="notifsContainer"></div>
+
         <div class="dock">
           <div class="dock-icon active">
             <svg viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v10a2 2 0 01-2 2H5a2 2 0 01-2-2V10z" stroke="currentColor" fill="none"/><path d="M9 22V12h6v10" stroke="currentColor" fill="none"/></svg>
@@ -542,298 +538,340 @@
         </div>
       </div>
     </div>
-    <button class="reset-btn" id="resetFromPhone">↺ сыграть ещё раз</button>
   </div>
+
 </div>
 
 <script>
-  (function(){
-    // ---------- ЗВУК ----------
-    let audioCtx = null;
+(function(){
+  'use strict';
 
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // ---------- ЗВУК ----------
+  let audioCtx = null;
+  function initAudio() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+  }
+  function playClickSound(frequency, type, duration) {
+    initAudio();
+    if (!audioCtx) return;
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.value = frequency || 620;
+      const d = duration || 0.12;
+      gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + d);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + d);
+    } catch(e){}
+  }
+  function playDeathSound() {
+    initAudio();
+    if (!audioCtx) return;
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 1.2);
+      gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.3);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 1.3);
+    } catch(e){}
+  }
+  function playNotificationSound() {
+    initAudio();
+    if (!audioCtx) return;
+    [880, 1100].forEach((freq, i) => {
+      setTimeout(() => {
+        if (!audioCtx) return;
+        try {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.22);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.22);
+        } catch(e){}
+      }, i * 140);
+    });
+  }
+  function playCountdownBeep(isFinal, isRed) {
+    initAudio();
+    if (!audioCtx) return;
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = isFinal ? 880 : (isRed ? 380 : 440);
+      const d = isFinal ? 0.35 : 0.15;
+      gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + d);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + d);
+    } catch(e){}
+  }
+  function playPhoneOpenSound() {
+    initAudio();
+    if (!audioCtx) return;
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(680, audioCtx.currentTime + 0.18);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.25);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+    } catch(e){}
+  }
+
+  // ---------- DOM ----------
+  const dilemmaScreen       = document.getElementById('dilemmaScreen');
+  const countdownScreenBlue = document.getElementById('countdownScreenBlue');
+  const countdownScreenRed  = document.getElementById('countdownScreenRed');
+  const deathScreen         = document.getElementById('deathScreen');
+  const phoneStage          = document.getElementById('phoneStage');
+  const blueBtn             = document.getElementById('blueBtn');
+  const redBtn              = document.getElementById('redBtn');
+  const resetFromDeath      = document.getElementById('resetFromDeath');
+  const notifsContainer     = document.getElementById('notifsContainer');
+  const idleHint            = document.getElementById('idleHint');
+
+  const countdownNumberBlue  = document.getElementById('countdownNumberBlue');
+  const countdownBarFillBlue = document.getElementById('countdownBarFillBlue');
+  const countdownSubBlue     = document.getElementById('countdownSubBlue');
+
+  const countdownNumberRed  = document.getElementById('countdownNumberRed');
+  const countdownBarFillRed = document.getElementById('countdownBarFillRed');
+  const countdownSubRed     = document.getElementById('countdownSubRed');
+
+  const deathSubText = document.getElementById('deathSubText');
+
+  // ---------- СОСТОЯНИЕ ----------
+  let countdownInterval = null;
+  let isTransitioning = false;
+  let idleTimer = null;
+  const IDLE_DELAY = 15000;
+  const TOTAL_POPULATION = 7.9;
+
+  // ---------- СМЕНА ЭКРАНОВ ----------
+  const allScreens = [
+    dilemmaScreen,
+    countdownScreenBlue,
+    countdownScreenRed,
+    deathScreen,
+    phoneStage
+  ];
+
+  function showScreen(name) {
+    allScreens.forEach(s => {
+      s.classList.remove('active');
+      s.style.display = '';
+    });
+
+    let target = null;
+    if (name === 'dilemma')            target = dilemmaScreen;
+    else if (name === 'countdownBlue') target = countdownScreenBlue;
+    else if (name === 'countdownRed')  target = countdownScreenRed;
+    else if (name === 'death')         target = deathScreen;
+    else if (name === 'phone')         target = phoneStage;
+    if (!target) return;
+
+    void target.offsetWidth;
+    target.classList.add('active');
+
+    if (name === 'dilemma') startIdleTimer();
+    else stopIdleTimer();
+  }
+
+  // ---------- ПАСХАЛКА ----------
+  function startIdleTimer() {
+    stopIdleTimer();
+    idleHint.classList.remove('visible');
+    idleTimer = setTimeout(() => idleHint.classList.add('visible'), IDLE_DELAY);
+  }
+  function stopIdleTimer() {
+    if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
+    idleHint.classList.remove('visible');
+  }
+
+  // ---------- КАУНТДАУН ----------
+  function clearCountdown() {
+    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+  }
+
+  function runCountdown(config) {
+    clearCountdown();
+    const { screenName, numberEl, barEl, subEl, isRed, onComplete } = config;
+
+    numberEl.textContent = '5';
+    barEl.style.width = '0%';
+    subEl.textContent = isRed ? 'обработка вашего выбора' : 'сканирование человечества';
+
+    showScreen(screenName);
+    playCountdownBeep(false, isRed);
+
+    const totalDuration = 4000;
+    const steps = 20;
+    const stepTime = totalDuration / steps;
+    let currentStep = 0;
+
+    countdownInterval = setInterval(() => {
+      currentStep++;
+      const progress = currentStep / steps;
+      numberEl.textContent = Math.max(0, Math.ceil(5 - progress * 5));
+      barEl.style.width = (progress * 100) + '%';
+
+      // --- Подсчёт голосов для обоих сценариев ---
+      const processed = (TOTAL_POPULATION * progress).toFixed(1);
+      if (isRed) {
+        if (progress < 0.25)      subEl.textContent = `обработка голосов... ${processed} млрд`;
+        else if (progress < 0.5)  subEl.textContent = `подсчёт решений... ${processed} млрд`;
+        else if (progress < 0.75) subEl.textContent = `обработка ${processed} млрд голосов...`;
+        else                      subEl.textContent = `финальный подсчёт... ${processed} млрд`;
+      } else {
+        if (progress < 0.25)      subEl.textContent = `сканирование человечества... ${processed} млрд`;
+        else if (progress < 0.5)  subEl.textContent = `подсчёт голосов... ${processed} млрд`;
+        else if (progress < 0.75) subEl.textContent = `обработка ${processed} млрд решений...`;
+        else                      subEl.textContent = `финальный подсчёт... ${processed} млрд`;
       }
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-    }
 
-    function playClickSound(frequency = 620, type = 'sine', duration = 0.12) {
-      try {
-        initAudio();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.value = frequency;
-        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-      } catch (e) {}
-    }
+      if (currentStep % 4 === 0 && currentStep < steps) playCountdownBeep(false, isRed);
+      if (currentStep >= steps) {
+        clearCountdown();
+        playCountdownBeep(true, isRed);
+        setTimeout(onComplete, 450);
+      }
+    }, stepTime);
+  }
 
-    function playDeathSound() {
-      try {
-        initAudio();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(140, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 1.2);
-        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.3);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 1.3);
-      } catch (e) {}
-    }
+  // ---------- ТЕЛЕФОН ----------
+  function showPhone() {
+    playPhoneOpenSound();
+    if (navigator.vibrate) { try { navigator.vibrate(40); } catch(e){} }
 
-    function playNotificationSound() {
-      try {
-        initAudio();
-        [880, 1100].forEach((freq, i) => {
-          setTimeout(() => {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.22);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.22);
-          }, i * 140);
-        });
-      } catch (e) {}
-    }
+    notifsContainer.innerHTML = '';
+    notifsContainer.classList.remove('visible');
 
-    function playCountdownBeep(isFinal = false, isRed = false) {
-      try {
-        initAudio();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = isFinal ? 880 : (isRed ? 380 : 440);
-        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + (isFinal ? 0.35 : 0.15));
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + (isFinal ? 0.35 : 0.15));
-      } catch (e) {}
-    }
+    showScreen('phone');
 
-    // ---------- DOM ----------
-    const dilemmaScreen = document.getElementById('dilemmaScreen');
-    const countdownScreenBlue = document.getElementById('countdownScreenBlue');
-    const countdownScreenRed = document.getElementById('countdownScreenRed');
-    const deathScreen = document.getElementById('deathScreen');
-    const phoneScreen = document.getElementById('phoneScreen');
-    const blueBtn = document.getElementById('blueBtn');
-    const redBtn = document.getElementById('redBtn');
-    const resetFromDeath = document.getElementById('resetFromDeath');
-    const resetFromPhone = document.getElementById('resetFromPhone');
-    const notificationsContainer = document.getElementById('notificationsContainer');
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => notifsContainer.classList.add('visible'));
+    });
 
-    const countdownNumberBlue = document.getElementById('countdownNumberBlue');
-    const countdownBarFillBlue = document.getElementById('countdownBarFillBlue');
-    const countdownSubBlue = document.getElementById('countdownSubBlue');
+    setTimeout(() => {
+      const n1 = document.createElement('div');
+      n1.className = 'notif';
+      n1.innerHTML = `
+        <div class="notif-icon">⚠️</div>
+        <div class="notif-body">
+          <div class="notif-title">Системное сообщение</div>
+          <div class="notif-text">Поздравляю, вы убили 49,999% человечества</div>
+          <div class="notif-time">сейчас</div>
+        </div>
+      `;
+      notifsContainer.appendChild(n1);
+      playNotificationSound();
+      notifsContainer.scrollTo({ top: notifsContainer.scrollHeight, behavior: 'smooth' });
+    }, 700);
 
-    const countdownNumberRed = document.getElementById('countdownNumberRed');
-    const countdownBarFillRed = document.getElementById('countdownBarFillRed');
-    const countdownSubRed = document.getElementById('countdownSubRed');
+    setTimeout(() => {
+      const n2 = document.createElement('div');
+      n2.className = 'notif';
+      n2.innerHTML = `
+        <div class="notif-icon">🗳️</div>
+        <div class="notif-body">
+          <div class="notif-title">Напоминание</div>
+          <div class="notif-text">Ваш голос мог стать решающим</div>
+          <div class="notif-time">сейчас</div>
+        </div>
+      `;
+      notifsContainer.appendChild(n2);
+      playNotificationSound();
+      notifsContainer.scrollTo({ top: notifsContainer.scrollHeight, behavior: 'smooth' });
+    }, 2400);
+  }
 
-    const deathSubText = document.getElementById('deathSubText');
+  function resetGame() {
+    clearCountdown();
+    notifsContainer.innerHTML = '';
+    notifsContainer.classList.remove('visible');
+    isTransitioning = false;
+    showScreen('dilemma');
+    playClickSound(450, 'triangle', 0.1);
+  }
 
-    // ---------- СОСТОЯНИЕ ----------
-    let countdownInterval = null;
+  // ---------- ОБРАБОТЧИКИ ----------
+  blueBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    initAudio();
+    if (isTransitioning) return;
+    isTransitioning = true;
+    stopIdleTimer();
 
-    function hideAllScreens() {
-      [countdownScreenBlue, countdownScreenRed, deathScreen, phoneScreen].forEach(s => {
-        s.classList.remove('active');
+    playClickSound(520, 'sine', 0.16);
+    setTimeout(() => {
+      runCountdown({
+        screenName: 'countdownBlue',
+        numberEl: countdownNumberBlue,
+        barEl: countdownBarFillBlue,
+        subEl: countdownSubBlue,
+        isRed: false,
+        onComplete: () => {
+          deathSubText.textContent = '51,3% проголосовали за красную кнопку';
+          playDeathSound();
+          showScreen('death');
+        }
       });
-      dilemmaScreen.style.display = 'none';
-      countdownScreenBlue.style.display = 'none';
-      countdownScreenRed.style.display = 'none';
-      deathScreen.style.display = 'none';
-      phoneScreen.style.display = 'none';
-    }
+    }, 120);
+  });
 
-    function showScreen(name) {
-      hideAllScreens();
-      if (name === 'dilemma') {
-        dilemmaScreen.style.display = 'flex';
-      } else if (name === 'countdownBlue') {
-        countdownScreenBlue.style.display = 'flex';
-        countdownScreenBlue.classList.add('active');
-      } else if (name === 'countdownRed') {
-        countdownScreenRed.style.display = 'flex';
-        countdownScreenRed.classList.add('active');
-      } else if (name === 'death') {
-        deathScreen.style.display = 'flex';
-        deathScreen.classList.add('active');
-      } else if (name === 'phone') {
-        phoneScreen.style.display = 'flex';
-        phoneScreen.classList.add('active');
-      }
-    }
+  redBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    initAudio();
+    if (isTransitioning) return;
+    isTransitioning = true;
+    stopIdleTimer();
 
-    function clearCountdown() {
-      if (countdownInterval) {
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-      }
-    }
+    playClickSound(340, 'square', 0.13);
+    setTimeout(() => {
+      runCountdown({
+        screenName: 'countdownRed',
+        numberEl: countdownNumberRed,
+        barEl: countdownBarFillRed,
+        subEl: countdownSubRed,
+        isRed: true,
+        onComplete: () => showPhone()
+      });
+    }, 100);
+  });
 
-    // Универсальный каунтдаун
-    function runCountdown(config) {
-      clearCountdown();
+  resetFromDeath.addEventListener('click', (e) => {
+    e.stopPropagation();
+    initAudio();
+    resetGame();
+  });
 
-      const { screenName, numberEl, barEl, subEl, isRed, onComplete } = config;
+  dilemmaScreen.addEventListener('click', () => {
+    if (dilemmaScreen.classList.contains('active')) startIdleTimer();
+  });
 
-      // сброс
-      numberEl.textContent = '5';
-      barEl.style.width = '0%';
-      subEl.textContent = isRed ? 'обработка вашего выбора' : 'сканирование человечества';
+  document.body.addEventListener('click', initAudio, { once: true });
+  document.body.addEventListener('touchstart', initAudio, { once: true, passive: true });
 
-      showScreen(screenName);
-      playCountdownBeep(false, isRed);
-
-      const totalDuration = 4000;
-      const steps = 20;
-      const stepTime = totalDuration / steps;
-      let currentStep = 0;
-
-      countdownInterval = setInterval(() => {
-        currentStep++;
-        const progress = currentStep / steps;
-
-        const displayNum = Math.max(0, Math.ceil(5 - progress * 5));
-        numberEl.textContent = displayNum;
-        barEl.style.width = (progress * 100) + '%';
-
-        // подписи
-        if (isRed) {
-          if (progress < 0.25) subEl.textContent = 'обработка вашего выбора...';
-          else if (progress < 0.5) subEl.textContent = 'подтверждение решения...';
-          else if (progress < 0.75) subEl.textContent = 'фиксация результата...';
-          else subEl.textContent = 'почти готово...';
-        } else {
-          if (progress < 0.25) subEl.textContent = 'сканирование человечества...';
-          else if (progress < 0.5) subEl.textContent = 'подсчёт голосов...';
-          else if (progress < 0.75) subEl.textContent = 'обработка 7.9 млрд решений...';
-          else subEl.textContent = 'финальный подсчёт...';
-        }
-
-        if (currentStep % 4 === 0 && currentStep < steps) {
-          playCountdownBeep(false, isRed);
-        }
-
-        if (currentStep >= steps) {
-          clearCountdown();
-          playCountdownBeep(true, isRed);
-          setTimeout(onComplete, 450);
-        }
-      }, stepTime);
-    }
-
-    // Показать телефон
-    function showPhone() {
-      showScreen('phone');
-      notificationsContainer.innerHTML = '';
-
-      setTimeout(() => {
-        const notif1 = document.createElement('div');
-        notif1.className = 'notif';
-        notif1.innerHTML = `
-          <div class="notif-icon">⚠️</div>
-          <div class="notif-content">
-            <div class="notif-title">Системное сообщение</div>
-            <div class="notif-text">Поздравляю, вы убили 49,999% человечества</div>
-          </div>
-        `;
-        notificationsContainer.appendChild(notif1);
-        playNotificationSound();
-      }, 900);
-
-      setTimeout(() => {
-        const notif2 = document.createElement('div');
-        notif2.className = 'notif';
-        notif2.innerHTML = `
-          <div class="notif-icon">🗳️</div>
-          <div class="notif-content">
-            <div class="notif-title">Напоминание</div>
-            <div class="notif-text">Ваш голос мог стать решающим</div>
-          </div>
-        `;
-        notificationsContainer.appendChild(notif2);
-        playNotificationSound();
-      }, 2800);
-    }
-
-    function resetGame() {
-      clearCountdown();
-      notificationsContainer.innerHTML = '';
-      showScreen('dilemma');
-      playClickSound(450, 'triangle', 0.1);
-    }
-
-    // ---------- ОБРАБОТЧИКИ ----------
-    blueBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      playClickSound(520, 'sine', 0.16);
-      setTimeout(() => {
-        runCountdown({
-          screenName: 'countdownBlue',
-          numberEl: countdownNumberBlue,
-          barEl: countdownBarFillBlue,
-          subEl: countdownSubBlue,
-          isRed: false,
-          onComplete: () => {
-            deathSubText.textContent = '51,3% проголосовали за красную кнопку';
-            playDeathSound();
-            showScreen('death');
-          }
-        });
-      }, 120);
-    });
-
-    redBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      playClickSound(340, 'square', 0.13);
-      setTimeout(() => {
-        runCountdown({
-          screenName: 'countdownRed',
-          numberEl: countdownNumberRed,
-          barEl: countdownBarFillRed,
-          subEl: countdownSubRed,
-          isRed: true,
-          onComplete: () => {
-            showPhone();
-          }
-        });
-      }, 100);
-    });
-
-    resetFromDeath.addEventListener('click', (e) => {
-      e.stopPropagation();
-      resetGame();
-    });
-
-    resetFromPhone.addEventListener('click', (e) => {
-      e.stopPropagation();
-      resetGame();
-    });
-
-    document.body.addEventListener('click', () => {
-      initAudio();
-    }, { once: true });
-  })();
+  startIdleTimer();
+})();
 </script>
 
 </body>
